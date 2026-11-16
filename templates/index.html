@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous AI Research Pipeline (Flask)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        pre, code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Markdown Report Styling */
+        .markdown-body h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+        }
+        .markdown-body h2 {
+            font-size: 1.45rem;
+            font-weight: 600;
+            color: #38bdf8;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body p {
+            line-height: 1.7;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+        .markdown-body ul, .markdown-body ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        .markdown-body ul {
+            list-style-type: disc;
+        }
+        .markdown-body ol {
+            list-style-type: decimal;
+        }
+        .markdown-body li {
+            margin-bottom: 0.35rem;
+        }
+        .markdown-body strong {
+            color: #f1f5f9;
+        }
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.25rem 0;
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .markdown-body th, .markdown-body td {
+            border: 1px solid #334155;
+            padding: 10px 14px;
+            text-align: left;
+        }
+        .markdown-body th {
+            background: #1e293b;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+        .markdown-body td {
+            color: #cbd5e1;
+        }
+        .markdown-body blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            color: #94a3b8;
+            font-style: italic;
+            margin: 1rem 0;
+        }
+        .markdown-body a {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+        .markdown-body a:hover {
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-microchip text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                            DeepResearch AI
+                        </span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                            Flask Edition
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">Autonomous 4-Stage Multi-Agent Research System</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Model Badge -->
+                <div id="modelBadge" class="hidden md:flex items-center space-x-2 text-xs bg-slate-800/70 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700/60">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="activeModelLabel">Gemini 3.5 Flash Lite</span>
+                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-mono">Free Tier Safe</span>
+                </div>
+
+                <!-- History Button -->
+                <button onclick="toggleHistoryDrawer()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Research History">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+
+                <!-- Settings Button -->
+                <button onclick="openSettingsModal()" class="flex items-center space-x-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-200 hover:text-white rounded-lg border border-slate-700 transition text-sm">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i>
+                    <span class="hidden sm:inline">Settings</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero Section -->
+        <div class="text-center max-w-3xl mx-auto space-y-3 pt-2">
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight">
+                Autonomous <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Multi-Agent</span> Research
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base">
+                Four collaborative AI agents execute Tavily web discovery, deep page scraping, structured reporting, and critical peer review in real time.
+            </p>
+        </div>
+
+        <!-- Search Input Bar -->
+        <div class="max-w-3xl mx-auto space-y-3">
+            <div class="relative flex items-center">
+                <div class="absolute left-4 text-slate-400 pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                </div>
+                <input
+                    type="text"
+                    id="topicInput"
+                    placeholder="Enter any topic (e.g. Next-Generation Solid-State Batteries in 2025)..."
+                    class="w-full pl-12 pr-36 py-4 rounded-2xl bg-slate-900 border border-slate-700/80 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 text-slate-100 placeholder-slate-500 outline-none transition shadow-xl"
+                    onkeydown="if(event.key === 'Enter') startResearch();"
+                >
+                <button
+                    id="submitBtn"
+                    onclick="startResearch()"
+                    class="absolute right-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium text-sm transition shadow-lg shadow-indigo-600/30 flex items-center space-x-2"
+                >
+                    <span id="btnText">Research</span>
+                    <i id="btnIcon" class="fa-solid fa-bolt"></i>
+                </button>
+            </div>
+
+            <!-- Starter Topic Chips -->
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-1 text-xs">
+                <span class="text-slate-400 font-medium mr-1">Try:</span>
+                <button onclick="setTopic('Multi-Agent AI Workflows in 2025')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition">
+                    🤖 Multi-Agent AI
+                </button>
+                <button onclick="setTopic('Quantum Computing Breakthroughs 2025')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition">
+                    ⚡ Quantum Computing
+                </button>
+                <button onclick="setTopic('Solid-State Battery Commercialization')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition">
+                    🔋 Solid-State Batteries
+                </button>
+                <button onclick="setTopic('CRISPR-Cas9 Therapeutics in 2025')" class="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition">
+                    🧬 CRISPR Therapies
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Progress Stepper (Visible during and after execution) -->
+        <div id="progressCard" class="hidden max-w-4xl mx-auto rounded-2xl bg-slate-900/80 border border-slate-800 p-6 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-2">
+                    <span id="statusSpinner" class="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></span>
+                    <span id="statusTitle" class="font-semibold text-sm text-slate-200">Executing Multi-Agent Pipeline...</span>
+                </div>
+                <div class="text-xs text-slate-400 flex items-center space-x-1">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="pipelineTimer">0.0s</span>
+                </div>
+            </div>
+
+            <!-- Steps Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Step 1 -->
+                <div id="step-1" class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 space-y-1.5 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Step 1</span>
+                        <span class="step-status text-xs text-slate-400"><i class="fa-regular fa-circle"></i></span>
+                    </div>
+                    <div class="font-medium text-sm text-slate-200">Search Agent</div>
+                    <p class="step-desc text-xs text-slate-400">Tavily Web Discovery</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="step-2" class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 space-y-1.5 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Step 2</span>
+                        <span class="step-status text-xs text-slate-400"><i class="fa-regular fa-circle"></i></span>
+                    </div>
+                    <div class="font-medium text-sm text-slate-200">Reader Agent</div>
+                    <p class="step-desc text-xs text-slate-400">Deep Page Scraping</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="step-3" class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 space-y-1.5 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Step 3</span>
+                        <span class="step-status text-xs text-slate-400"><i class="fa-regular fa-circle"></i></span>
+                    </div>
+                    <div class="font-medium text-sm text-slate-200">Writer Chain</div>
+                    <p class="step-desc text-xs text-slate-400">Report Synthesis</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="step-4" class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 space-y-1.5 transition">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Step 4</span>
+                        <span class="step-status text-xs text-slate-400"><i class="fa-regular fa-circle"></i></span>
+                    </div>
+                    <div class="font-medium text-sm text-slate-200">Critic Chain</div>
+                    <p class="step-desc text-xs text-slate-400">Peer Evaluation & Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsCard" class="hidden max-w-5xl mx-auto space-y-6">
+
+            <!-- Metrics Overview -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Research Topic</span>
+                    <div id="metricTopic" class="text-sm font-semibold text-slate-100 truncate mt-1">-</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Critic Score</span>
+                    <div id="metricScore" class="text-2xl font-black text-emerald-400 mt-0.5">-</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Sources Found</span>
+                    <div id="metricSources" class="text-2xl font-bold text-sky-400 mt-0.5">0</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Total Duration</span>
+                    <div id="metricTime" class="text-2xl font-bold text-purple-400 mt-0.5">0s</div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation & Action Toolbar -->
+            <div class="border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+                <div class="flex space-x-1 sm:space-x-2 overflow-x-auto text-sm font-medium">
+                    <button onclick="switchTab('report')" id="tabBtn-report" class="px-3.5 py-2 rounded-lg text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 whitespace-nowrap">
+                        <i class="fa-solid fa-file-lines mr-1.5"></i> Final Report
+                    </button>
+                    <button onclick="switchTab('critic')" id="tabBtn-critic" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-award mr-1.5"></i> Critic & Score
+                    </button>
+                    <button onclick="switchTab('sources')" id="tabBtn-sources" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-link mr-1.5"></i> Sources (<span id="sourceTabCount">0</span>)
+                    </button>
+                    <button onclick="switchTab('scraped')" id="tabBtn-scraped" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-globe mr-1.5"></i> Scraped Page
+                    </button>
+                    <button onclick="switchTab('performance')" id="tabBtn-performance" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-stopwatch mr-1.5"></i> Timing
+                    </button>
+                    <button onclick="switchTab('raw')" id="tabBtn-raw" class="px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap">
+                        <i class="fa-solid fa-code mr-1.5"></i> JSON
+                    </button>
+                </div>
+
+                <!-- Export & Actions -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="downloadReport('md')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+                        <i class="fa-solid fa-download"></i>
+                        <span>.md</span>
+                    </button>
+                    <button onclick="downloadReport('txt')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>.txt</span>
+                    </button>
+                    <button onclick="copyReport()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 flex items-center space-x-1.5 transition">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Final Report -->
+            <div id="tabContent-report" class="p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <div id="renderedReport" class="markdown-body"></div>
+            </div>
+
+            <!-- Tab 2: Critic Evaluation -->
+            <div id="tabContent-critic" class="hidden p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-100">Critic Peer Review</h3>
+                        <p class="text-xs text-slate-400">Strict factuality, coherence, and depth assessment</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 uppercase tracking-wider block">Score</span>
+                        <span id="criticScoreBadge" class="text-2xl font-black text-emerald-400">-</span>
+                    </div>
+                </div>
+                <div id="criticFeedbackContent" class="whitespace-pre-line text-slate-300 text-sm leading-relaxed p-4 rounded-xl bg-slate-950/70 border border-slate-800"></div>
+            </div>
+
+            <!-- Tab 3: Discovered Sources -->
+            <div id="tabContent-sources" class="hidden p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-100">Discovered Sources</h3>
+                    <p class="text-xs text-slate-400">URLs and documents retrieved by the Tavily Search Agent</p>
+                </div>
+                <div id="sourcesList" class="space-y-3"></div>
+                <div class="pt-4 border-t border-slate-800">
+                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Search Agent Overview</h4>
+                    <div id="searchAgentSummary" class="text-xs text-slate-400 p-4 rounded-xl bg-slate-950 border border-slate-800 whitespace-pre-line"></div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Scraped Page -->
+            <div id="tabContent-scraped" class="hidden p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-100">Scraped Article Content</h3>
+                    <p id="scrapedUrlLabel" class="text-xs text-indigo-400 break-all"></p>
+                </div>
+                <div id="scrapedTextPreview" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono max-h-96 overflow-y-auto whitespace-pre-wrap"></div>
+            </div>
+
+            <!-- Tab 5: Execution Times -->
+            <div id="tabContent-performance" class="hidden p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-6">
+                <h3 class="text-lg font-bold text-slate-100">Step Performance Breakdown</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                        <span class="text-xs text-slate-400">Search Agent</span>
+                        <div id="perfSearch" class="text-xl font-bold text-indigo-400 mt-1">0s</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                        <span class="text-xs text-slate-400">Reader Agent</span>
+                        <div id="perfReader" class="text-xl font-bold text-sky-400 mt-1">0s</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                        <span class="text-xs text-slate-400">Writer Chain</span>
+                        <div id="perfWriter" class="text-xl font-bold text-purple-400 mt-1">0s</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                        <span class="text-xs text-slate-400">Critic Chain</span>
+                        <div id="perfCritic" class="text-xl font-bold text-emerald-400 mt-1">0s</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 6: Raw JSON -->
+            <div id="tabContent-raw" class="hidden p-6 sm:p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+                <h3 class="text-lg font-bold text-slate-100 mb-3">Pipeline Output State</h3>
+                <pre id="rawJsonPreview" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs text-emerald-400 max-h-96 overflow-auto"></pre>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-slate-100 flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i>
+                    <span>Pipeline Settings</span>
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm">
+                <!-- Free Plan Notice -->
+                <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-200 space-y-1">
+                    <div class="flex items-center space-x-1.5 font-semibold text-indigo-300">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Google Free Tier Protection</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300">
+                        • <strong>15–30 RPM</strong> & 1,500 requests/day.<br>
+                        • Automatically paced with 1s pauses to prevent rate limits.
+                    </p>
+                </div>
+
+                <!-- Gemini Model Selector -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Google Gemini Model</label>
+                    <select id="settingModel" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none focus:border-indigo-500">
+                        <option value="gemini-3.5-flash-lite" selected>Gemini 3.5 Flash Lite (Best for Free Plan - Fast & High RPM)</option>
+                        <option value="gemini-3.5-flash">Gemini 3.5 Flash (Deep Multimodal Reasoning)</option>
+                        <option value="gemini-3.8-flash">Gemini 3.8 Flash (Latest Preview Architecture)</option>
+                    </select>
+                </div>
+
+                <!-- Temperature -->
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-semibold text-slate-300 uppercase">Temperature</label>
+                        <span id="tempValueDisplay" class="text-xs text-indigo-400 font-mono">0.0</span>
+                    </div>
+                    <input type="range" id="settingTemp" min="0" max="1" step="0.05" value="0.0" oninput="document.getElementById('tempValueDisplay').innerText = this.value" class="w-full accent-indigo-500">
+                </div>
+
+                <!-- Google API Key -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Google API Key</label>
+                    <input type="password" id="settingGoogleKey" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none focus:border-indigo-500 text-xs font-mono">
+                    <span id="googleStatusNote" class="text-[11px] text-slate-400 mt-1 block"></span>
+                </div>
+
+                <!-- Tavily API Key -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Tavily API Key</label>
+                    <input type="password" id="settingTavilyKey" placeholder="tvly-..." class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none focus:border-indigo-500 text-xs font-mono">
+                    <span id="tavilyStatusNote" class="text-[11px] text-slate-400 mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+                <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+                    Cancel
+                </button>
+                <button onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Drawer -->
+    <div id="historyDrawer" class="hidden fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-slate-900 border-l border-slate-800 p-6 shadow-2xl flex flex-col space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-slate-100 flex items-center space-x-2">
+                <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+                <span>Session History</span>
+            </h3>
+            <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div id="historyList" class="flex-1 overflow-y-auto space-y-2.5 pr-1">
+            <p class="text-xs text-slate-400 text-center py-8">No research sessions yet.</p>
+        </div>
+
+        <div class="pt-2 border-t border-slate-800">
+            <button onclick="clearHistory()" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 hover:text-rose-400 text-slate-400 text-xs transition">
+                <i class="fa-solid fa-trash-can mr-1"></i> Clear History
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-sm shadow-2xl transition transform translate-y-20 opacity-0 pointer-events-none flex items-center space-x-2">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Notification</span>
+    </div>
+
+    <!-- Client-Side JavaScript -->
+    <script>
+        let currentResult = null;
+        let eventSource = null;
+        let timerInterval = null;
+        let startTime = 0;
+
+        // Initialize state from local storage or server config
+        window.addEventListener('DOMContentLoaded', async () => {
+            loadHistory();
+            await fetchConfig();
+        });
+
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/config');
+                const data = await res.json();
+                if (data.has_google_key) {
+                    document.getElementById('googleStatusNote').innerText = `✓ Loaded from .env (${data.google_masked})`;
+                } else {
+                    document.getElementById('googleStatusNote').innerText = `⚠️ Not set in .env`;
+                }
+                if (data.has_tavily_key) {
+                    document.getElementById('tavilyStatusNote').innerText = `✓ Loaded from .env (${data.tavily_masked})`;
+                } else {
+                    document.getElementById('tavilyStatusNote').innerText = `⚠️ Not set in .env`;
+                }
+            } catch (err) {
+                console.error("Config fetch error:", err);
+            }
+        }
+
+        function setTopic(topic) {
+            document.getElementById('topicInput').value = topic;
+            startResearch();
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            if (type === 'error') {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        function updateStepStatus(stepNum, status, message) {
+            const stepEl = document.getElementById(`step-${stepNum}`);
+            if (!stepEl) return;
+
+            const iconSpan = stepEl.querySelector('.step-status');
+            const descEl = stepEl.querySelector('.step-desc');
+
+            if (status === 'running') {
+                stepEl.className = "p-3.5 rounded-xl border border-indigo-500/60 bg-indigo-950/20 space-y-1.5 transition";
+                iconSpan.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-indigo-400"></i>';
+                if (message) descEl.innerText = message;
+            } else if (status === 'complete') {
+                stepEl.className = "p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-950/10 space-y-1.5 transition";
+                iconSpan.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+                if (message) descEl.innerText = message;
+            } else {
+                stepEl.className = "p-3.5 rounded-xl border border-slate-800 bg-slate-950/60 space-y-1.5 transition";
+                iconSpan.innerHTML = '<i class="fa-regular fa-circle text-slate-500"></i>';
+            }
+        }
+
+        function startResearch() {
+            const topic = document.getElementById('topicInput').value.trim();
+            if (!topic) {
+                showToast("Please enter a research topic", "error");
+                return;
+            }
+
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            // UI Loading State
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('btnText').innerText = "Running...";
+            document.getElementById('btnIcon').className = "fa-solid fa-circle-notch fa-spin";
+            document.getElementById('progressCard').classList.remove('hidden');
+            document.getElementById('resultsCard').classList.add('hidden');
+
+            for (let i = 1; i <= 4; i++) {
+                updateStepStatus(i, 'pending', '');
+            }
+
+            // Start Timer
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('pipelineTimer').innerText = `${elapsed}s`;
+            }, 100);
+
+            // Fetch settings
+            const model = document.getElementById('settingModel').value;
+            const temp = document.getElementById('settingTemp').value;
+            const googleKey = document.getElementById('settingGoogleKey').value.trim();
+            const tavilyKey = document.getElementById('settingTavilyKey').value.trim();
+
+            const params = new URLSearchParams({
+                topic: topic,
+                model: model,
+                temperature: temp,
+            });
+            if (googleKey) params.append('google_key', googleKey);
+            if (tavilyKey) params.append('tavily_key', tavilyKey);
+
+            eventSource = new EventSource(`/api/research/stream?${params.toString()}`);
+
+            eventSource.onmessage = function(e) {
+                if (e.data === "ping") return;
+                try {
+                    const data = JSON.parse(e.data);
+
+                    if (data.type === "progress") {
+                        updateStepStatus(data.step, data.status, data.message);
+                    } else if (data.type === "complete") {
+                        clearInterval(timerInterval);
+                        eventSource.close();
+                        displayResults(data.result);
+                        saveToHistory(data.result);
+                        resetButtonState();
+                        showToast("Research & Evaluation completed!");
+                    } else if (data.type === "error") {
+                        clearInterval(timerInterval);
+                        eventSource.close();
+                        resetButtonState();
+                        showToast(`Error: ${data.error}`, "error");
+                    }
+                } catch (err) {
+                    console.error("Event parse error:", err);
+                }
+            };
+
+            eventSource.onerror = function(err) {
+                clearInterval(timerInterval);
+                eventSource.close();
+                resetButtonState();
+                showToast("Connection to research stream interrupted.", "error");
+            };
+        }
+
+        function resetButtonState() {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('btnText').innerText = "Research";
+            document.getElementById('btnIcon').className = "fa-solid fa-bolt";
+        }
+
+        function displayResults(res) {
+            currentResult = res;
+
+            // Overview Metrics
+            document.getElementById('metricTopic').innerText = res.topic || "-";
+            document.getElementById('metricScore').innerText = res.score || "Evaluated";
+            document.getElementById('metricSources').innerText = (res.urls || []).length;
+            document.getElementById('metricTime').innerText = `${res.total_time || 0}s`;
+            document.getElementById('sourceTabCount').innerText = (res.urls || []).length;
+
+            // Render Markdown Report
+            const rawReport = res.report || "No report generated.";
+            document.getElementById('renderedReport').innerHTML = marked.parse(rawReport);
+
+            // Critic Feedback
+            document.getElementById('criticScoreBadge').innerText = res.score || "Evaluated";
+            document.getElementById('criticFeedbackContent').innerText = res.feedback || "No feedback recorded.";
+
+            // Discovered Sources List
+            const sourcesContainer = document.getElementById('sourcesList');
+            sourcesContainer.innerHTML = '';
+            const urls = res.urls || [];
+            if (urls.length > 0) {
+                urls.forEach((url, i) => {
+                    const card = document.createElement('div');
+                    card.className = "p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs";
+                    card.innerHTML = `
+                        <div class="flex items-center space-x-2 truncate pr-2">
+                            <span class="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">${i + 1}</span>
+                            <a href="${url}" target="_blank" class="text-sky-400 hover:text-sky-300 truncate">${url}</a>
+                        </div>
+                        <a href="${url}" target="_blank" class="text-slate-400 hover:text-white ml-2 flex-shrink-0">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    `;
+                    sourcesContainer.appendChild(card);
+                });
+            } else {
+                sourcesContainer.innerHTML = '<p class="text-xs text-slate-500">No explicit URLs were extracted.</p>';
+            }
+
+            document.getElementById('searchAgentSummary').innerText = res.search_result || "N/A";
+
+            // Scraped Page
+            document.getElementById('scrapedUrlLabel').innerText = res.top_url ? `URL: ${res.top_url}` : "Top URL";
+            document.getElementById('scrapedTextPreview').innerText = res.scrape_result || "No content scraped.";
+
+            // Performance Steps
+            const steps = res.steps || {};
+            document.getElementById('perfSearch').innerText = `${steps.search_time || 0}s`;
+            document.getElementById('perfReader').innerText = `${steps.scrape_time || 0}s`;
+            document.getElementById('perfWriter').innerText = `${steps.writer_time || 0}s`;
+            document.getElementById('perfCritic').innerText = `${steps.critic_time || 0}s`;
+
+            // Raw JSON
+            document.getElementById('rawJsonPreview').innerText = JSON.stringify(res, null, 2);
+
+            // Show results card
+            document.getElementById('resultsCard').classList.remove('hidden');
+            switchTab('report');
+        }
+
+        function switchTab(tabKey) {
+            const tabs = ['report', 'critic', 'sources', 'scraped', 'performance', 'raw'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tabBtn-${t}`);
+                const content = document.getElementById(`tabContent-${t}`);
+                if (t === tabKey) {
+                    btn.className = "px-3.5 py-2 rounded-lg text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 whitespace-nowrap";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "px-3.5 py-2 rounded-lg text-slate-400 hover:text-slate-200 whitespace-nowrap";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // Export Actions
+        function downloadReport(ext) {
+            if (!currentResult || !currentResult.report) {
+                showToast("No report to download", "error");
+                return;
+            }
+            const blob = new Blob([currentResult.report], { type: ext === 'md' ? 'text/markdown' : 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const safeTopic = (currentResult.topic || 'research').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+            a.href = url;
+            a.download = `research_${safeTopic}.${ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast(`Downloaded report as .${ext}`);
+        }
+
+        function copyReport() {
+            if (!currentResult || !currentResult.report) {
+                showToast("No report to copy", "error");
+                return;
+            }
+            navigator.clipboard.writeText(currentResult.report).then(() => {
+                showToast("Report copied to clipboard!");
+            });
+        }
+
+        // History Management
+        function saveToHistory(res) {
+            let hist = JSON.parse(localStorage.getItem('research_history') || '[]');
+            // Prepend new result
+            hist.unshift(res);
+            // Limit to 20
+            hist = hist.slice(0, 20);
+            localStorage.setItem('research_history', JSON.stringify(hist));
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const hist = JSON.parse(localStorage.getItem('research_history') || '[]');
+            const container = document.getElementById('historyList');
+            container.innerHTML = '';
+
+            if (hist.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">No research sessions yet.</p>';
+                return;
+            }
+
+            hist.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = "p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 cursor-pointer transition space-y-1";
+                card.onclick = () => {
+                    displayResults(item);
+                    toggleHistoryDrawer();
+                    showToast(`Restored: ${item.topic}`);
+                };
+                card.innerHTML = `
+                    <div class="font-medium text-xs text-slate-200 truncate">${item.topic}</div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>Score: <b class="text-emerald-400">${item.score || 'N/A'}</b></span>
+                        <span>${item.total_time || 0}s</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('research_history');
+            loadHistory();
+            showToast("Session history cleared");
+        }
+
+        function toggleHistoryDrawer() {
+            const drawer = document.getElementById('historyDrawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        async function saveSettings() {
+            const googleKey = document.getElementById('settingGoogleKey').value.trim();
+            const tavilyKey = document.getElementById('settingTavilyKey').value.trim();
+            const model = document.getElementById('settingModel').value;
+
+            document.getElementById('activeModelLabel').innerText = model.replace('gemini-', 'Gemini ').replace('-', ' ');
+
+            if (googleKey || tavilyKey) {
+                try {
+                    await fetch('/api/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ google_key: googleKey, tavily_key: tavilyKey })
+                    });
+                } catch (err) {
+                    console.error("Save config error:", err);
+                }
+            }
+            closeSettingsModal();
+            showToast("Settings saved!");
+        }
+    </script>
+</body>
+</html>
+
