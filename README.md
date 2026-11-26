@@ -94,6 +94,8 @@ genrative AI/
 ├── agents.py               # Gemini Agent and LCEL runnable chain definitions
 ├── tools.py                # LangChain tools (Tavily search & BeautifulSoup scrape)
 ├── requirements.txt        # Python package dependencies
+├── Dockerfile              # Container image definition (Python 3.13 + Gunicorn)
+├── .dockerignore           # Excludes .env, .venv, and build artifacts from image
 ├── .env                    # Secret API keys (GOOGLE_API_KEY, TAVILY_API_KEY)
 ├── .env.example            # Safe template for API keys
 ├── .gitignore              # Ignores .venv, .env, and build artifacts
@@ -134,8 +136,8 @@ uv pip install -r requirements.txt
 Create or update your `.env` file in the project root:
 
 ```env
-GOOGLE_API_KEY="AIzaSy..."
-TAVILY_API_KEY="tvly-..."
+GOOGLE_API_KEY=AIzaSy...
+TAVILY_API_KEY=tvly-...
 ```
 
 > **Note:** API keys can also be set or changed directly in the browser via the **Settings** modal in the web interface.
@@ -165,6 +167,22 @@ To test or execute research directly in your terminal:
 python pipeline.py
 ```
 You will be prompted to enter a research topic, and logs will print for each stage.
+
+### Option C: Run with Docker
+
+Make sure your `.env` file uses `KEY=VALUE` format without spaces around `=` or surrounding quotes (required by Docker's `--env-file`).
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t research-assistant .
+   ```
+
+2. **Run the container:**
+   ```bash
+   docker run --rm -p 5000:5000 --env-file .env research-assistant
+   ```
+
+Once running, open **`http://localhost:5000`** in your browser.
 
 ---
 

@@ -1,0 +1,36 @@
+# Secrets & environment files
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python caches & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Version control & IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# OS & logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Docker files
+Dockerfile
+.dockerignore
